@@ -150,7 +150,7 @@
   </div>
 
   <script>
-    // ✅ REQUIRED CHANGE: Use Render backend base URL
+    // ✅ REQUIRED CHANGE: your backend is on Render
     const API_BASE = "https://cargroomers.onrender.com";
 
     function togglePassword() {
@@ -185,20 +185,21 @@
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          msg.innerText = data.message || data.error || "Login failed";
+          msg.innerText = data.error || data.message || "Login failed";
           return;
         }
 
-        // ✅ If your backend returns token, store it (optional)
+        // ✅ store token
         if (data.token) {
           localStorage.setItem("adminToken", data.token);
         }
 
-        // ✅ REQUIRED CHANGE: This controls admin.html protection
+        // ✅ mark logged in (admin.html uses this)
         localStorage.setItem("adminLoggedIn", "true");
 
-        // ✅ REQUIRED CHANGE: use relative path for Netlify
-        window.location.href = "admin.html";
+        // ✅ REQUIRED CHANGE (GitHub Pages):
+        // because your website is hosted inside /Cargroomers/
+        window.location.href = "/Cargroomers/admin.html";
       } catch (err) {
         msg.innerText = "Server error. Try again.";
       } finally {
@@ -207,7 +208,7 @@
       }
     }
 
-    // ✅ Optional: allow Enter key to login on mobile/desktop
+    // ✅ Enter key support
     document.addEventListener("keydown", (e) => {
       if (e.key === "Enter") login();
     });
