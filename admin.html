@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard | CarGroomers</title>
+  <style>
+    /* ✅ REQUIRED FIX: prevent horizontal scroll on mobile */
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b0b0b;
+      color: #fff;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1 {
+      margin: 0 0 16px 0;
+      font-size: 24px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .logout {
+      background: #444;
+      color: #fff;
+    }
+
+    .refresh {
+      background: #ff2b2b;
+      color: #fff;
+      margin-left: 10px;
+    }
+
+    table {
+      width: 100%;
+      max-width: 100%; /* ✅ REQUIRED FIX */
+      border-collapse: collapse;
+      margin-top: 18px;
+      background: #151515;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #222;
+      text-align: left;
+      font-size: 14px;
+      vertical-align: top;
+      word-break: break-word;
+      overflow-wrap: anywhere; /* ✅ REQUIRED FIX */
+    }
+
+    th {
+      background: #1c1c1c;
+      font-weight: 700;
+    }
+
+    .status {
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+
+    .pending { color: #ffcc00; }
+    .accepted { color: #00ff99; }
+    .rejected { color: #ff5c5c; }
+
+    .action-btn {
+      margin-right: 8px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .accept { background: #00aa66; color: #fff; }
+    .reject { background: #cc2222; color: #fff; }
+    .delete { background: #555; color: #fff; }
+
+    /* ✅ REQUIRED CHANGE: Suggest Slot UI */
+    .suggest-btn { background: #ffcc00; color: #000; }
+
+    .slot-box {
+      margin-top: 8px;
+      background: #0f0f0f;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 10px;
+      width: 260px;
+      max-width: 100%;
+    }
+
+    .slot-box label {
+      display: block;
+      font-size: 11px;
+      color: #aaa;
+      margin: 6px 0 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .slot-box input, .slot-box select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #000;
+      color: #fff;
+      outline: none;
+      font-size: 13px;
+    }
+
+    .slot-box input:focus, .slot-box select:focus {
+      border-color: #ffcc00;
+      box-shadow: 0 0 10px rgba(255, 204, 0, 0.15);
+    }
+
+    .small-note {
+      font-size: 11px;
+      color: #999;
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    /* ✅ REQUIRED CHANGE: Validation message UI */
+    .error-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(255, 0, 0, 0.12);
+      border: 1px solid rgba(255, 0, 0, 0.4);
+      color: #ff7a7a;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    /* ✅ REQUIRED FIX: Mobile-friendly layout improvements */
+    @media (max-width: 900px) {
+      body { padding: 12px; }
+      h1 { font-size: 20px; }
+
+      /* ✅ Make buttons fit nicely */
+      .logout, .refresh {
+        width: auto;
+        margin-bottom: 8px;
+      }
+
+      /* ✅ Responsive table -> stacked cards */
+      table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 14px;
+        border: 1px solid #222;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #151515;
+      }
+
+      td {
+        border-bottom: 1px solid #222;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #ccc;
+        min-width: 120px;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.6px;
+        flex-shrink: 0; /* ✅ REQUIRED FIX */
+      }
+
+      /* ✅ SLOT box should not look squeezed */
+      .slot-box {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      /* ✅ IMPORTANT FIX: action buttons should not overflow */
+      .action-btn {
+        width: 100%;
+        margin-right: 0;
+      }
+
+      /* ✅ IMPORTANT FIX: inside Action cell, stack properly */
+      td[data-label="Action"] {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+
+  <button class="logout" onclick="logout()">Logout</button>
+  <button class="refresh" onclick="loadBookings()">Refresh</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Service</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Suggested Slot</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <script>
+    // ✅ REQUIRED CHANGE: Use Render backend for ALL API calls
+    const API_BASE = "https://cargroomers.onrender.com";
+
+    function getToken() {
+      return localStorage.getItem("adminToken");
+    }
+
+    function logout() {
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminLoggedIn");
+      window.location.href = "admin-login.html";
+    }
+
+    // ✅ Required: protect admin page
+    if (localStorage.getItem("adminLoggedIn") !== "true" && !getToken()) {
+      window.location.href = "admin-login.html";
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function fmtDate(d) {
+      try {
+        if (!d) return "-";
+        return new Date(d).toISOString().slice(0, 10);
+      } catch {
+        return "-";
+      }
+    }
+
+    // ✅ REQUIRED CHANGE: Validation helpers
+    function isValidPhone(phone) {
+      // Only 10 digit Indian mobile number
+      // Example: 9876543210
+      const p = String(phone || "").trim();
+      return /^[6-9]\d{9}$/.test(p);
+    }
+
+    function parseDateParts(dateStr) {
+      // Expect: YYYY-MM-DD
+      const s = String(dateStr || "").trim();
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return null;
+      return {
+        year: Number(m[1]),
+        month: Number(m[2]),
+        day: Number(m[3])
+      };
+    }
+
+    function daysInMonth(year, month) {
+      return new Date(year, month, 0).getDate();
+    }
+
+    function validateBookingDate(dateStr) {
+    const parts = parseDateParts(dateStr);
+    if (!parts) return { ok: false, reason: "Wrong date" };
+
+    const { year, month, day } = parts;
+
+    // ✅ Year validation (allow current year to +2 years)
+    const currentYear = new Date().getFullYear();
+    if (year < currentYear || year > currentYear + 2) {
+      return { ok: false, reason: "Wrong year" };
+    }
+
+    // ✅ Month validation
+    if (month < 1 || month > 12) {
+      return { ok: false, reason: "Wrong month" };
+    }
+
+    // ✅ Day/Date validation
+    const dim = daysInMonth(year, month);
+    if (day < 1 || day > dim) {
+      return { ok: false, reason: "Wrong date" };
+    }
+
+    // ✅ Timezone-safe past date check (NO Date parsing bug)
+    const today = new Date();
+    const todayY = today.getFullYear();
+    const todayM = today.getMonth() + 1;
+    const todayD = today.getDate();
+
+    const bookingNum = year * 10000 + month * 100 + day;
+    const todayNum = todayY * 10000 + todayM * 100 + todayD;
+
+    if (bookingNum < todayNum) {
+      return { ok: false, reason: "Wrong date" };
+    }
+
+    return { ok: true };
+  }
+
+
+    function makeValidationBadges(b) {
+      let badges = "";
+
+      // Phone validation
+      if (!isValidPhone(b.phone)) {
+        badges += `<div class="error-badge">Wrong phone number</div>`;
+      }
+
+      // Date validation
+      const dv = validateBookingDate(b.date);
+      if (!dv.ok) {
+        badges += `<div class="error-badge">${escapeHtml(dv.reason)}</div>`;
+      }
+
+      return badges;
+    }
+
+    async function loadBookings() {
+      const token = getToken();
+      if (!token) {
+        window.location.href = "admin-login.html";
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/api/admin/bookings`, {
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      if (res.status === 401) {
+        logout();
+        return;
+      }
+
+      const data = await res.json();
+
+      const rows = document.getElementById("rows");
+      rows.innerHTML = "";
+
+      (data.bookings || []).forEach(b => {
+        const tr = document.createElement("tr");
+
+        const statusClass =
+          b.status === "pending" ? "pending" :
+          b.status === "accepted" ? "accepted" :
+          "rejected";
+
+        const suggestedSlotText =
+          (b.suggested_date && b.suggested_time)
+            ? `<div><b>${fmtDate(b.suggested_date)}</b><br>${escapeHtml(b.suggested_time)}</div>`
+            : `<span style="color:#777;">-</span>`;
+
+        // ✅ disable accept/reject if already accepted/rejected
+        const isDone = (b.status === "accepted" || b.status === "rejected");
+
+        // ✅ REQUIRED CHANGE: show validation badges on each card/row
+        const validationBadges = makeValidationBadges(b);
+
+        tr.innerHTML = `
+          <td data-label="ID">${b.id}</td>
+          <td data-label="Name">${escapeHtml(b.name)} ${validationBadges}</td>
+          <td data-label="Phone">${escapeHtml(b.phone)}</td>
+          <td data-label="Service">${escapeHtml(b.service)}</td>
+          <td data-label="Date">${fmtDate(b.date)}</td>
+          <td data-label="Time">${escapeHtml(b.time || "-")}</td>
+
+          <td data-label="Suggested Slot">${suggestedSlotText}</td>
+
+          <td data-label="Status" class="status ${statusClass}">${escapeHtml(b.status)}</td>
+
+          <td data-label="Action">
+            <button class="action-btn accept" onclick="acceptBooking(${b.id})" ${isDone ? "disabled style='opacity:0.4;cursor:not-allowed;'" : ""}>
+              Accept
+            </button>
+
+            <button class="action-btn reject" onclick="rejectBooking(${b.id})" ${isDone ? "disabled style='opacity:0.4;cursor:not-allowed;'" : ""}>
+              Reject
+            </button>
+
+            <button class="action-btn delete" onclick="deleteBooking(${b.id})">
+              Delete
+            </button>
+
+            <button class="action-btn suggest-btn" onclick="rejectWithSuggestion(${b.id})" ${isDone ? "disabled style='opacity:0.4;cursor:not-allowed;'" : ""}>
+              Reject + Suggest Slot
+            </button>
+
+            <div class="slot-box">
+              <label>Suggested Date</label>
+              <input type="date" id="suggestDate_${b.id}" value="">
+
+              <label>Suggested Time</label>
+              <select id="suggestTime_${b.id}">
+                <option value="">Select Time</option>
+                <option>10:00 AM - 12:00 PM</option>
+                <option>12:00 PM - 02:00 PM</option>
+                <option>02:00 PM - 04:00 PM</option>
+                <option>04:00 PM - 06:00 PM</option>
+              </select>
+
+              <div class="small-note">
+                This will reject the booking and send the customer a new suggested slot popup.
+              </div>
+            </div>
+          </td>
+        `;
+
+        rows.appendChild(tr);
+      });
+    }
+
+    async function acceptBooking(id) {
+      const token = getToken();
+
+      const res = await fetch(`${API_BASE}/api/admin/bookings/${id}/accept`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert("❌ Accept failed: " + (data.error || "Unknown error"));
+        return;
+      }
+
+      loadBookings();
+    }
+
+    async function rejectBooking(id) {
+      const token = getToken();
+
+      const res = await fetch(`${API_BASE}/api/admin/bookings/${id}/reject`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert("❌ Reject failed: " + (data.error || "Unknown error"));
+        return;
+      }
+
+      loadBookings();
+    }
+
+    async function rejectWithSuggestion(id) {
+      const token = getToken();
+
+      const dateEl = document.getElementById(`suggestDate_${id}`);
+      const timeEl = document.getElementById(`suggestTime_${id}`);
+
+      const suggested_date = dateEl ? dateEl.value : "";
+      const suggested_time = timeEl ? timeEl.value : "";
+
+      if (!suggested_date || !suggested_time) {
+        alert("⚠️ Please select Suggested Date and Suggested Time first.");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/api/admin/bookings/${id}/reject`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        },
+        body: JSON.stringify({ suggested_date, suggested_time })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        alert("❌ Reject + Suggest failed: " + (data.error || "Unknown error"));
+        return;
+      }
+
+      alert("✅ Booking rejected and slot suggested!");
+      loadBookings();
+    }
+
+    async function deleteBooking(id) {
+      const token = getToken();
+
+      const ok = confirm("Are you sure you want to DELETE this booking request?");
+      if (!ok) return;
+
+      const res = await fetch(`${API_BASE}/api/admin/bookings/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        alert("❌ Delete failed: " + (data.error || "Unknown error"));
+        return;
+      }
+
+      loadBookings();
+    }
+
+    loadBookings();
+  </script>
+</body>
+</html>

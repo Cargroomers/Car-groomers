@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Login | CarGroomers</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b0b0b;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 18px;
+    }
+
+    /* ✅ Mobile friendly card */
+    .box {
+      width: 100%;
+      max-width: 420px;
+      padding: 22px;
+      background: #151515;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+    }
+
+    h2 {
+      margin: 0 0 18px 0;
+      font-size: 26px;
+      line-height: 1.2;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #d9d9d9;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+    }
+
+    input {
+      background: #fff;
+      color: #000;
+    }
+
+    button {
+      background: #ff2b2b;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 14px;
+      transition: 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .msg {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #ffdcdc;
+      min-height: 18px;
+      word-break: break-word;
+    }
+
+    /* ✅ Eye button style */
+    .pass-wrap {
+      position: relative;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .pass-wrap input {
+      width: 100%;
+      padding-right: 48px;
+      margin-top: 0;
+    }
+    .eye-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: #555;
+      padding: 0;
+      width: auto;
+      height: auto;
+      user-select: none;
+    }
+    .eye-btn:hover {
+      color: #000;
+    }
+
+    /* ✅ Better spacing on small screens */
+    @media (max-width: 420px) {
+      .box {
+        padding: 18px;
+        border-radius: 12px;
+      }
+      h2 {
+        font-size: 22px;
+      }
+      input, button {
+        font-size: 14px;
+        padding: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <h2>Admin Login</h2>
+
+    <label for="username">Username</label>
+    <input id="username" placeholder="Username" autocomplete="username" />
+
+    <label for="password">Password</label>
+    <div class="pass-wrap">
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+      <button type="button" class="eye-btn" onclick="togglePassword()" title="Show/Hide Password">👁️</button>
+    </div>
+
+    <button id="loginBtn" onclick="login()">Login</button>
+
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <script>
+    // ✅ REQUIRED CHANGE: Use Render backend base URL
+    const API_BASE = "https://cargroomers.onrender.com";
+
+    function togglePassword() {
+      const passInput = document.getElementById("password");
+      passInput.type = passInput.type === "password" ? "text" : "password";
+    }
+
+    async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("msg");
+      const loginBtn = document.getElementById("loginBtn");
+
+      msg.innerText = "";
+
+      // ✅ REQUIRED CHANGE: basic validation
+      if (!username || !password) {
+        msg.innerText = "Please enter username and password.";
+        return;
+      }
+
+      try {
+        loginBtn.disabled = true;
+        loginBtn.innerText = "Logging in...";
+
+        const res = await fetch(`${API_BASE}/api/admin/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          msg.innerText = data.message || data.error || "Login failed";
+          return;
+        }
+
+        // ✅ If your backend returns token, store it (optional)
+        if (data.token) {
+          localStorage.setItem("adminToken", data.token);
+        }
+
+        // ✅ REQUIRED CHANGE: This controls admin.html protection
+        localStorage.setItem("adminLoggedIn", "true");
+
+        // ✅ REQUIRED CHANGE: use relative path for Netlify
+        window.location.href = "admin.html";
+      } catch (err) {
+        msg.innerText = "Server error. Try again.";
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerText = "Login";
+      }
+    }
+
+    // ✅ Optional: allow Enter key to login on mobile/desktop
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") login();
+    });
+  </script>
+</body>
+</html>
