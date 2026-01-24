@@ -18,31 +18,49 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin@123";
 // ✅ REQUIRED for Render Postgres (SSL support)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : false
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
 });
 
 // ✅ Middleware
 app.set("trust proxy", 1);
 app.use(express.json());
 
+/* =====================================
+   ✅ REQUIRED CHANGE: Allow GitHub Pages Origin
+===================================== */
+
 const ALLOWED_ORIGINS = [
+  // ✅ Old Netlify (keep if needed)
   "https://cargroomers.netlify.app",
   "https://www.cargroomers.netlify.app",
+
+  // ✅ GitHub Pages (VERY IMPORTANT)
+  "https://cargroomers.github.io",
+  "https://cargroomers.github.io/Cargroomers",
+  "https://cargroomers.github.io/Cargroomers/",
+
+  // ✅ Localhost
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   "http://localhost:5500",
-  "http://127.0.0.1:5500"
+  "http://127.0.0.1:5500",
 ];
 
+// ✅ REQUIRED CHANGE: Better CORS for GitHub Pages + Mobile Safari
 app.use(
   cors({
     origin: function (origin, callback) {
+      // Allow Postman / curl / server-to-server requests
       if (!origin) return callback(null, true);
 
+      // ✅ allow exact origins list
       if (ALLOWED_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // ✅ REQUIRED CHANGE: Allow ANY github.io origin (safe for your use)
+      // Example origin: https://cargroomers.github.io
+      if (origin.endsWith(".github.io")) {
         return callback(null, true);
       }
 
@@ -50,25 +68,26 @@ app.use(
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
+    credentials: true,
   })
 );
 
+// ✅ REQUIRED CHANGE: Preflight fix
 app.options("*", cors());
 
-// ✅ Serve frontend from /public folder
+// ✅ Serve frontend from /public folder (optional)
 app.use(express.static(path.join(__dirname, "public")));
 
 /* =====================================
    ✅ Helper Functions
 ===================================== */
 
-// ✅ REQUIRED CHANGE: Clean phone like "94637 33229" => "9463733229"
+// ✅ Clean phone like "94637 33229" => "9463733229"
 function cleanPhone(phone) {
   return String(phone || "").replace(/[^\d]/g, "");
 }
 
-// ✅ REQUIRED CHANGE: Only 10 digits (after cleaning)
+// ✅ Only 10 digits (after cleaning)
 function isValidPhone(phone) {
   const cleaned = cleanPhone(phone);
   return /^[0-9]{10}$/.test(cleaned);
@@ -82,12 +101,12 @@ function isValidService(service) {
     "Full Detailing",
     "Interior Cleaning",
     "Exterior Wash",
-    "Custom Combo Plan"
+    "Custom Combo Plan",
   ];
   return allowed.includes(service);
 }
 
-// ✅ REQUIRED CHANGE: Date must be today -> next 1 year
+// ✅ Date must be today -> next 1 year
 function isValidBookingDate(dateStr) {
   // expects YYYY-MM-DD
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dateStr || ""))) return false;
@@ -131,8 +150,8 @@ app.get("/api/health", async (req, res) => {
     const result = await pool.query("SELECT NOW() AS server_time");
     res.json({
       ok: true,
-      message: "Server is running",
-      db_time: result.rows[0].server_time
+      message: "Server is running ✅",
+      db_time: result.rows[0].server_time,
     });
   } catch (err) {
     console.error("DB ERROR:", err);
@@ -157,21 +176,20 @@ app.post("/api/book", async (req, res) => {
 
     if (!isValidPhone(cleanedPhone)) {
       return res.status(400).json({
-        error: "Phone number must be exactly 10 digits (spaces / + / - allowed)."
+        error: "Phone number must be exactly 10 digits (spaces / + / - allowed).",
       });
     }
 
-    // ✅ REQUIRED CHANGE: service can be string or array
+    // ✅ service can be string or array
     let serviceText = "";
     if (Array.isArray(service)) {
-      // validate all
       for (const s of service) {
         if (!isValidService(s)) {
           return res.status(400).json({
             error:
               "Invalid service selected: " +
               s +
-              ". Allowed: PPF, Ceramic Coating, Window Tint, Full Detailing, Interior Cleaning, Exterior Wash, Custom Combo Plan"
+              ". Allowed: PPF, Ceramic Coating, Window Tint, Full Detailing, Interior Cleaning, Exterior Wash, Custom Combo Plan",
           });
         }
       }
@@ -180,16 +198,16 @@ app.post("/api/book", async (req, res) => {
       if (!isValidService(service)) {
         return res.status(400).json({
           error:
-            "Invalid service. Allowed: PPF, Ceramic Coating, Window Tint, Full Detailing, Interior Cleaning, Exterior Wash, Custom Combo Plan"
+            "Invalid service. Allowed: PPF, Ceramic Coating, Window Tint, Full Detailing, Interior Cleaning, Exterior Wash, Custom Combo Plan",
         });
       }
       serviceText = String(service);
     }
 
-    // ✅ REQUIRED CHANGE: validate date (today -> 1 year)
+    // ✅ validate date (today -> 1 year)
     if (!isValidBookingDate(date)) {
       return res.status(400).json({
-        error: "Preferred date must be between today and next 1 year."
+        error: "Preferred date must be between today and next 1 year.",
       });
     }
 
@@ -205,13 +223,13 @@ app.post("/api/book", async (req, res) => {
       serviceText.trim(),
       date,
       String(time).trim(),
-      note ? String(note).trim() : ""
+      note ? String(note).trim() : "",
     ]);
 
     res.json({
       success: true,
       message: "Booking request submitted successfully!",
-      bookingId: result.rows[0].id
+      bookingId: result.rows[0].id,
     });
   } catch (err) {
     console.error("BOOKING ERROR:", err);
@@ -261,11 +279,9 @@ app.post("/api/admin/login", (req, res) => {
     return res.status(401).json({ error: "Invalid admin credentials" });
   }
 
-  const token = jwt.sign(
-    { role: "admin", username: ADMIN_USERNAME },
-    JWT_SECRET,
-    { expiresIn: "2h" }
-  );
+  const token = jwt.sign({ role: "admin", username: ADMIN_USERNAME }, JWT_SECRET, {
+    expiresIn: "2h",
+  });
 
   return res.json({ success: true, token });
 });
@@ -276,9 +292,7 @@ app.post("/api/admin/login", (req, res) => {
 
 app.get("/api/admin/bookings", requireAdminAuth, async (req, res) => {
   try {
-    const result = await pool.query(
-      "SELECT * FROM bookings ORDER BY created_at DESC"
-    );
+    const result = await pool.query("SELECT * FROM bookings ORDER BY created_at DESC");
     res.json({ bookings: result.rows });
   } catch (err) {
     console.error("ADMIN FETCH ERROR:", err);
@@ -344,10 +358,9 @@ app.delete("/api/admin/bookings/:id", requireAdminAuth, async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
 
-    const result = await pool.query(
-      "DELETE FROM bookings WHERE id = $1 RETURNING id",
-      [bookingId]
-    );
+    const result = await pool.query("DELETE FROM bookings WHERE id = $1 RETURNING id", [
+      bookingId,
+    ]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Booking not found" });
@@ -367,3 +380,4 @@ app.delete("/api/admin/bookings/:id", requireAdminAuth, async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
+
