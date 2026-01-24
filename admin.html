@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -256,12 +257,15 @@
     function logout() {
       localStorage.removeItem("adminToken");
       localStorage.removeItem("adminLoggedIn");
-      window.location.href = "admin-login.html";
+
+      // ✅ REQUIRED CHANGE (GitHub Pages path)
+      window.location.href = "/Cargroomers/admin-login.html";
     }
 
     // ✅ Required: protect admin page
     if (localStorage.getItem("adminLoggedIn") !== "true" && !getToken()) {
-      window.location.href = "admin-login.html";
+      // ✅ REQUIRED CHANGE (GitHub Pages path)
+      window.location.href = "/Cargroomers/admin-login.html";
     }
 
     function escapeHtml(str) {
@@ -282,11 +286,15 @@
       }
     }
 
+    // ✅ OPTIONAL IMPROVEMENT (safe): allow phone with spaces, +, -, ()
+    function cleanPhone(phone) {
+      return String(phone || "").replace(/[^\d]/g, "");
+    }
+
     // ✅ REQUIRED CHANGE: Validation helpers
     function isValidPhone(phone) {
-      // Only 10 digit Indian mobile number
-      // Example: 9876543210
-      const p = String(phone || "").trim();
+      // Only 10 digit Indian mobile number (after cleaning)
+      const p = cleanPhone(phone);
       return /^[6-9]\d{9}$/.test(p);
     }
 
@@ -306,45 +314,40 @@
       return new Date(year, month, 0).getDate();
     }
 
+    // ✅ REQUIRED CHANGE:
+    // Date must be from TODAY to NEXT 1 YEAR (no past dates, no more than 1 year)
     function validateBookingDate(dateStr) {
-    const parts = parseDateParts(dateStr);
-    if (!parts) return { ok: false, reason: "Wrong date" };
+      const parts = parseDateParts(dateStr);
+      if (!parts) return { ok: false, reason: "Wrong date" };
 
-    const { year, month, day } = parts;
+      const { year, month, day } = parts;
 
-    // ✅ Year validation (allow current year to +2 years)
-    const currentYear = new Date().getFullYear();
-    if (year < currentYear || year > currentYear + 2) {
-      return { ok: false, reason: "Wrong year" };
+      if (month < 1 || month > 12) return { ok: false, reason: "Wrong month" };
+
+      const dim = daysInMonth(year, month);
+      if (day < 1 || day > dim) return { ok: false, reason: "Wrong date" };
+
+      // ✅ Timezone-safe compare using numeric YYYYMMDD (no Date parsing bug)
+      const bookingNum = year * 10000 + month * 100 + day;
+
+      const today = new Date();
+      const todayY = today.getFullYear();
+      const todayM = today.getMonth() + 1;
+      const todayD = today.getDate();
+      const todayNum = todayY * 10000 + todayM * 100 + todayD;
+
+      // ✅ 1 year limit (same day next year)
+      const oneYearLater = new Date(todayY + 1, today.getMonth(), todayD);
+      const oneYearNum =
+        oneYearLater.getFullYear() * 10000 +
+        (oneYearLater.getMonth() + 1) * 100 +
+        oneYearLater.getDate();
+
+      if (bookingNum < todayNum) return { ok: false, reason: "Wrong date" };
+      if (bookingNum > oneYearNum) return { ok: false, reason: "Wrong year" };
+
+      return { ok: true };
     }
-
-    // ✅ Month validation
-    if (month < 1 || month > 12) {
-      return { ok: false, reason: "Wrong month" };
-    }
-
-    // ✅ Day/Date validation
-    const dim = daysInMonth(year, month);
-    if (day < 1 || day > dim) {
-      return { ok: false, reason: "Wrong date" };
-    }
-
-    // ✅ Timezone-safe past date check (NO Date parsing bug)
-    const today = new Date();
-    const todayY = today.getFullYear();
-    const todayM = today.getMonth() + 1;
-    const todayD = today.getDate();
-
-    const bookingNum = year * 10000 + month * 100 + day;
-    const todayNum = todayY * 10000 + todayM * 100 + todayD;
-
-    if (bookingNum < todayNum) {
-      return { ok: false, reason: "Wrong date" };
-    }
-
-    return { ok: true };
-  }
-
 
     function makeValidationBadges(b) {
       let badges = "";
@@ -366,7 +369,7 @@
     async function loadBookings() {
       const token = getToken();
       if (!token) {
-        window.location.href = "admin-login.html";
+        window.location.href = "/Cargroomers/admin-login.html";
         return;
       }
 
@@ -379,7 +382,7 @@
         return;
       }
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       const rows = document.getElementById("rows");
       rows.innerHTML = "";
@@ -400,7 +403,7 @@
         // ✅ disable accept/reject if already accepted/rejected
         const isDone = (b.status === "accepted" || b.status === "rejected");
 
-        // ✅ REQUIRED CHANGE: show validation badges on each card/row
+        // ✅ show validation badges on each row
         const validationBadges = makeValidationBadges(b);
 
         tr.innerHTML = `
