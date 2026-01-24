@@ -291,7 +291,7 @@
     .close { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #666; transition: 0.2s; }
     .close:hover { color: var(--primary-solid); }
 
-    /* ✅ COMBO OPTION STYLES (you had CSS missing for selected) */
+    /* ✅ COMBO OPTION STYLES */
     .combo-option {
       display: flex; justify-content: space-between; align-items: center;
       padding: 15px; background: #222; border-radius: 8px; margin-bottom: 10px;
@@ -950,7 +950,7 @@
       <label>Phone Number</label>
       <input type="tel" id="bookPhone" placeholder="10 digit phone number" required>
 
-      <!-- ✅ Service Interest (Multi-select) -->
+      <!-- ✅ REQUIRED CHANGE ONLY: ADD missing services -->
       <label>Service Interest (Select Multiple)</label>
       <div id="serviceCheckboxes" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
         <label style="text-transform:none; font-weight:500; color:#fff;">
@@ -964,6 +964,12 @@
         </label>
         <label style="text-transform:none; font-weight:500; color:#fff;">
           <input type="checkbox" value="Full Detailing"> Full Detailing
+        </label>
+        <label style="text-transform:none; font-weight:500; color:#fff;">
+          <input type="checkbox" value="Interior Cleaning"> Interior Cleaning
+        </label>
+        <label style="text-transform:none; font-weight:500; color:#fff;">
+          <input type="checkbox" value="Exterior Wash"> Exterior Wash
         </label>
       </div>
 
@@ -997,7 +1003,6 @@
       <br><b>2 items = 5% Off</b> | <b>3+ items = 10% Off</b>
     </p>
 
-    <!-- ✅ REQUIRED CHANGE: pass serviceName + price -->
     <div class="combo-option" onclick="toggleCombo(this, 'Window Tint', 199)">
       <span>Window Tint</span>
       <span>$199</span>
@@ -1090,7 +1095,7 @@
     document.getElementById(id).style.display = 'none';
   }
 
-  // ✅ openBooking pre-check 1 service checkbox
+  // ✅ FIX: openBooking selects checkbox (works for ALL services now)
   function openBooking(serviceName) {
     document.querySelectorAll("#serviceCheckboxes input[type='checkbox']").forEach(cb => {
       cb.checked = false;
@@ -1123,7 +1128,7 @@
     }
   }
 
-  // ✅ CUSTOM COMBO CALCULATOR (FIXED: stores selected services)
+  // ✅ CUSTOM COMBO CALCULATOR
   let comboSubtotal = 0;
   let comboSelectedServices = [];
 
@@ -1161,21 +1166,20 @@
     totalEl.innerText = '$' + Math.ceil(finalTotal);
   }
 
-function sendCustomComboRequest() {
-  if (comboSelectedServices.length < 2) {
-    alert("⚠️ Please select at least 2 services to build a custom combo plan.");
-    return;
+  function sendCustomComboRequest() {
+    if (comboSelectedServices.length < 2) {
+      alert("⚠️ Please select at least 2 services to build a custom combo plan.");
+      return;
+    }
+
+    closeModal("comboModal");
+    openModal("bookingModal");
+
+    // ✅ Auto-check services in booking form
+    document.querySelectorAll("#serviceCheckboxes input[type='checkbox']").forEach(cb => {
+      cb.checked = comboSelectedServices.includes(cb.value);
+    });
   }
-
-  closeModal("comboModal");
-  openModal("bookingModal");
-
-  // ✅ Auto-check services in booking form
-  document.querySelectorAll("#serviceCheckboxes input[type='checkbox']").forEach(cb => {
-    cb.checked = comboSelectedServices.includes(cb.value);
-  });
-}
-
 
   // --- FAQ TOGGLE ---
   document.querySelectorAll('.faq-item h3').forEach(item => {
@@ -1363,8 +1367,32 @@ function sendCustomComboRequest() {
       addMessage(replyHtml, 'bot', true);
     }, 800);
   }
-    /* ✅ BOOKING FORM -> MULTI SERVICE + CLEAN PHONE + DATE LIMITS */
-    document.getElementById("bookingForm").addEventListener("submit", async function (e) {
+
+  // ✅ REQUIRED CHANGE: date picker limits (MOVED OUTSIDE submit handler)
+  function setDateLimits() {
+    const dateInput = document.getElementById("preferredDate");
+    if (!dateInput) return;
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const minDate = `${yyyy}-${mm}-${dd}`;
+
+    const oneYearLater = new Date(today);
+    oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+    const yyyy2 = oneYearLater.getFullYear();
+    const mm2 = String(oneYearLater.getMonth() + 1).padStart(2, "0");
+    const dd2 = String(oneYearLater.getDate()).padStart(2, "0");
+    const maxDate = `${yyyy2}-${mm2}-${dd2}`;
+
+    dateInput.min = minDate;
+    dateInput.max = maxDate;
+  }
+  setDateLimits();
+
+  /* ✅ BOOKING FORM -> MULTI SERVICE + CLEAN PHONE + DATE LIMITS */
+  document.getElementById("bookingForm").addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const name = document.getElementById("bookName").value.trim();
@@ -1405,28 +1433,6 @@ function sendCustomComboRequest() {
       alert("❌ Date must be within 1 year from today.");
       return;
     }
-    // ✅ Set date limits in picker: today -> next 1 year
-    (function setDateLimits() {
-      const dateInput = document.getElementById("preferredDate");
-      if (!dateInput) return;
-
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-      const minDate = `${yyyy}-${mm}-${dd}`;
-
-      const oneYearLater = new Date(today);
-      oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-      const yyyy2 = oneYearLater.getFullYear();
-      const mm2 = String(oneYearLater.getMonth() + 1).padStart(2, "0");
-      const dd2 = String(oneYearLater.getDate()).padStart(2, "0");
-      const maxDate = `${yyyy2}-${mm2}-${dd2}`;
-
-      dateInput.min = minDate;
-      dateInput.max = maxDate;
-    })();
-
 
     // ✅ selected services (checkboxes)
     const selectedServices = Array.from(
@@ -1498,6 +1504,9 @@ function sendCustomComboRequest() {
       comboSelectedServices = [];
       document.querySelectorAll(".combo-option.selected").forEach(el => el.classList.remove("selected"));
       updateComboDisplay();
+
+      // ✅ reset date limits again (because reset clears value)
+      setDateLimits();
 
     } catch (err) {
       alert("❌ Server Error. Please try again.");
