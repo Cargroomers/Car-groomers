@@ -14,6 +14,8 @@
 
   <!-- ✅ Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 
   <style>
     :root {
@@ -737,79 +739,6 @@
   </div>
 </section>
 
-<section id="gallery">
-  <div class="container">
-    <div class="section-title">
-      <h2>Recent Works</h2>
-      <p>From the studio to the open road.</p>
-    </div>
-    <div class="gallery">
-      <div class="gallery-item" onclick="openBooking('Exterior Wash')">
-        <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Studio Detail">
-        <div class="gallery-label">Studio Detail</div>
-      </div>
-
-      <div class="gallery-item" onclick="openBooking('PPF')">
-        <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="PPF Work">
-        <div class="gallery-label">Outdoor Protection</div>
-      </div>
-
-      <div class="gallery-item" onclick="openBooking('Ceramic Coating')">
-        <img src="https://images.unsplash.com/photo-1503376763036-066120622c74?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Ceramic Finish">
-        <div class="gallery-label">Road Performance</div>
-      </div>
-
-      <div class="gallery-item" onclick="openBooking('Interior Cleaning')">
-        <img src="https://images.unsplash.com/photo-1493238792015-1a419af69290?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Interior Cleaning">
-        <div class="gallery-label">Interior Precision</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="working">
-  <div class="container">
-    <div class="section-title">
-      <h2>Working Photos</h2>
-      <p>Real behind-the-scenes work at CarGroomers.</p>
-    </div>
-
-    <div class="working-grid">
-      <div class="working-card">
-        <img src="ppf.jpg" alt="Working - PPF">
-        <div class="w-content">
-          <h4>PPF Installation</h4>
-          <p>Precision fitment for front-end protection and self-healing coverage.</p>
-        </div>
-      </div>
-
-      <div class="working-card">
-        <img src="ceramic%20coating.webp" alt="Working - Ceramic">
-        <div class="w-content">
-          <h4>Ceramic Coating</h4>
-          <p>Deep gloss finish with hydrophobic protection and easy maintenance.</p>
-        </div>
-      </div>
-
-      <div class="working-card">
-        <img src="window%20tint.webp" alt="Working - Tint">
-        <div class="w-content">
-          <h4>Window Tinting</h4>
-          <p>Heat rejection and privacy with premium nanoceramic tint options.</p>
-        </div>
-      </div>
-
-      <div class="working-card">
-        <img src="car detailing2.jpg" alt="Working - Detailing">
-        <div class="w-content">
-          <h4>Interior Detailing</h4>
-          <p>Deep clean upholstery, plastics, and premium interior restoration.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section id="testimonials">
   <div class="container">
     <div class="section-title">
@@ -876,19 +805,59 @@
         Car<span>Groomers</span>
       </a>
       <p style="margin-top: 20px;">Beaumont's premier auto styling and protection studio.</p>
+
+
+         <!-- ✅ Social Icons -->
+      <div style="margin-top:15px;">
+        <a href="https://www.instagram.com/car.groomers?igsh=MXQ0cmh4dXJpZmlzaA==" 
+           target="_blank" 
+           title="Follow us on Instagram"
+           style="font-size:22px; margin-right:12px; color:#e1306c;">
+          <i class="fab fa-instagram"></i>
+        </a>
+      </div>
     </div>
+
     <div class="footer-info">
       <h3>Contact Info</h3>
-      <p>📧 cargroomers1@gmail.com</p>
-      <p>📍 132 Rue Montalet, Beaumont</p>
-      <p>📞 +1 (780) 655-3757</p>
-      <p>📞 +1 (780) 818-0211</p>
+
+      <p>
+        📧 
+        <a href="mailto:cargroomers1@gmail.com">
+          cargroomers1@gmail.com
+        </a>
+      </p>
+
+      <p>
+        📍 
+        <a href="https://www.google.com/maps/search/?api=1&query=132+Rue+Montalet,+Beaumont"
+           target="_blank">
+          132 Rue Montalet, Beaumont
+        </a>
+      </p>
+
+      <p>
+        📞 
+        <a href="tel:+17806553757">
+          +1 (780) 655-3757
+        </a>
+      </p>
+
+      <p>
+        📞 
+        <a href="tel:+17808180211">
+          +1 (780) 818-0211
+        </a>
+      </p>
     </div>
+
   </div>
+
   <div style="text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #222;">
     <p>&copy; 2025 CarGroomers Auto Studio.</p>
   </div>
 </footer>
+
 
 <div class="back-to-top" id="backToTopBtn" onclick="scrollToTop()">↑</div>
 
@@ -1273,7 +1242,7 @@
       if (status === "rejected") {
         if (suggestedDate && suggestedTime) {
           addMessage(
-            `❌ Your booking is <b>REJECTED</b>.<br><br>
+            `❌ sorry our team is not<b>available</b>.<br><br>
              ✅ But our team suggested a new slot:<br>
              📅 <b>${new Date(suggestedDate).toISOString().slice(0,10)}</b><br>
              ⏰ <b>${suggestedTime}</b><br><br>
@@ -1285,7 +1254,7 @@
         }
 
         addMessage(
-          `❌ Your booking is <b>REJECTED</b>.<br><br>
+          `❌ sorry our team is not<b>available</b>.<br><br>
            Please contact us to book a new slot.`,
           "bot",
           true
@@ -1573,7 +1542,7 @@
 
         if (suggested.date && suggested.time) {
           showStatusPopup(
-            "❌ Booking Rejected",
+            "❌ Sorry our team is not available",
             `Your request is rejected.<br><br>
             ✅ <b>But our team suggested new time & date:</b><br>
             📅 <b>${new Date(suggested.date).toISOString().slice(0,10)}</b><br>
@@ -1584,8 +1553,8 @@
         }
 
         showStatusPopup(
-          "❌ Booking Rejected",
-          `Sorry, your booking request was rejected.<br><br>Please contact us for new slot booking.`
+          "❌ Sorry our team is not available",
+          `Sorry our team is not available.<br><br>Please contact us for new slot booking.`
         );
         return;
       }
@@ -1602,5 +1571,3 @@
 
 </body>
 </html>
-
-
